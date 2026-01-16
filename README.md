@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# OpenClinic Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a project for getting some experience on the frontend development using React. It is built for the [OpenClinic Hospital Management System](https://github.com/jovi-j/OpenClinic), using React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 👥 Role-Based Access
+*   **Patient View**: Book appointments, view appointment history, and check live queue status.
+*   **Medic View**: Manage daily schedule, view assigned patient queue, and call patients.
+*   **Attendant View**: Create queues, issue tickets, manage general queues, redirect patients to medics, and manage appointments.
+*   **Administration Mode**: Manage (Create/Edit/Delete) Patients, Medics, and Attendants.
 
-## React Compiler
+### 🖥️ Kiosk Mode
+*   Dedicated touch-friendly interface for patients to self-issue tickets.
+*   Supports "Normal", "Preferential", and "Exam Results" priorities.
+*   Auto-prints tickets.
+*   Full-screen support for tablets/kiosks.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### 📺 TV Display Mode
+*   Real-time display of called tickets for waiting rooms.
+*   Shows current ticket number, priority, and destination (Consultation Room or Counter).
+*   History of last 5 called tickets.
 
-## Expanding the ESLint configuration
+### 📅 Appointment Management
+*   **Scheduling**: Patients can book appointments by selecting a month, day, and time slot.
+*   **Pagination**: Efficiently browse through appointment history.
+*   **Filtering**: Filter appointments by date, status, medic, or patient.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🎫 Queue Management
+*   **General Queues**: For initial reception/triage.
+*   **Medic Queues**: Specific queues for each doctor.
+*   **Ticket Redirection**: Attendants can redirect a patient from a general queue to a specific medic's queue after triage.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠️ Technologies Used
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+*   **React 18**: UI Library.
+*   **TypeScript**: Static typing for reliability.
+*   **Vite**: Fast build tool and development server.
+*   **Tailwind CSS**: Utility-first CSS framework for styling.
+*   **Fetch API**: For communication with the Spring Boot backend.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📋 Prerequisites
+
+*   **Node.js**: Version 18 or higher.
+*   **OpenClinic Backend**: A running instance of the [OpenClinic Spring Boot API](https://github.com/jovi-j/OpenClinic).
+
+## ⚙️ Configuration
+
+The application connects to the backend API. By default, it attempts to connect to `http://localhost:8182`.
+
+To change the backend URL (e.g., for LAN access), edit the `.env` file in the root directory:
+
+```env
+VITE_API_URL=http://YOUR_BACKEND_IP:8182
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/jovi-j/openclinic-frontend.git
+    cd openclinic-frontend
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server**
+   - **Running on a single computer**
+      If you only want to run dev mode on a single device, just run:
+      ```bash
+      npm run dev
+      ```
+   - **Running on multiple devices**
+      To be able to test it on other devices inside your LAN, run:
+      ```bash
+      npm run dev -- --host
+      ```
+
+4.  **Open in Browser**
+    *   Local: `http://localhost:5173`
+    *   Network: `http://YOUR_LAN_IP:5173`
+
+## 📱 Usage Guide
+
+1.  **First Launch**: You will see a Role Selection screen.
+2.  **Admin Setup**:
+    *   Go to **Administration Mode**.
+    *   Create at least one **Medic** and one **Attendant**.
+    *   Create **Patients** as needed.
+3.  **Daily Operation**:
+    *   **Attendant**: Log in, create a **General Queue** for the day.
+    *   **Medic**: Log in, create a **Schedule** for the current month to open appointment slots.
+    *   **Kiosk**: Open Kiosk Mode on a tablet/terminal for patients to get tickets.
+    *   **Display**: Open TV Display on a large screen in the waiting room.
+4.  **Patient Flow**:
+    *   Patient gets a ticket (Kiosk).
+    *   Attendant calls ticket (General Queue).
+    *   Attendant redirects ticket to Medic (if appointment exists).
+    *   Medic calls ticket (Medic Queue).
+
+## 📄 License
+
+This project is licensed under the MIT License.
