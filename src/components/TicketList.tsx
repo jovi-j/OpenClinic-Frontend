@@ -108,6 +108,16 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     }
   };
 
+  const handleUnredeemed = async (ticketId: string) => {
+    if (!window.confirm('Are you sure you want to mark this ticket as unredeemed?')) return;
+    try {
+      await ApiService.markTicketUnredeemed(ticketId);
+      await fetchData();
+    } catch (err: any) {
+      alert(`Error marking ticket as unredeemed: ${err.message}`);
+    }
+  };
+
   const openRedirectModal = (ticketId: string) => {
     setRedirectTicketId(ticketId);
     setRedirectMedicId('');
@@ -274,21 +284,29 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
                     {medic ? `Medic: ${medic.person?.name}` : (attendant ? `Attendant: ${attendant.person?.name}` : '-')}
                   </td>
                   {(role === 'ATTENDANT' || role === 'MEDIC') && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
                       {role === 'ATTENDANT' && isGenericQueue && ticket.status !== 'UNREDEEMED' && (
-                        <button
-                          onClick={() => openRedirectModal(ticket.id!)}
-                          className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md border border-indigo-200"
-                        >
-                          Redirect to Medic
-                        </button>
+                        <>
+                          <button
+                            onClick={() => openRedirectModal(ticket.id!)}
+                            className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md border border-indigo-200"
+                          >
+                            Redirect
+                          </button>
+                          <button
+                            onClick={() => handleUnredeemed(ticket.id!)}
+                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md border border-red-200"
+                          >
+                            Unredeemed
+                          </button>
+                        </>
                       )}
                       {role === 'MEDIC' && !isGenericQueue && ticket.status === 'CALLED_BY_MEDIC' && (
                         <button
                           onClick={() => handleComplete(ticket.id!)}
                           className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md border border-green-200"
                         >
-                          Finish Appointment
+                          Finish
                         </button>
                       )}
                     </td>

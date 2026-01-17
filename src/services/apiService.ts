@@ -93,6 +93,13 @@ export const ApiService = {
     });
     return handleResponse<TicketResponseDTO>(response);
   },
+  markTicketUnredeemed: async (id: string): Promise<TicketResponseDTO> => {
+    const response = await fetch(`${BASE_URL}/tickets/${id}/unredeemed`, {
+      method: 'POST',
+      headers,
+    });
+    return handleResponse<TicketResponseDTO>(response);
+  },
 
   // Ticket Queues
   listTicketQueues: async (): Promise<TicketQueueResponseDTO[]> => {
