@@ -36,8 +36,8 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     return `${year}-${month}-${day}`;
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [ticketsData, queuesData, attendantsData, medicsData, patientsData] = await Promise.all([
         ApiService.listTickets(),
@@ -188,7 +188,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
         <div className="bg-red-50 text-red-700 p-4 rounded-lg inline-block max-w-md">
           <p className="font-medium">Failed to load tickets</p>
           <p className="text-sm mt-1">{error}</p>
-          <button onClick={fetchData} className="mt-3 text-sm bg-white border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors">
+          <button onClick={() => fetchData()} className="mt-3 text-sm bg-white border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors">
             Retry
           </button>
         </div>
