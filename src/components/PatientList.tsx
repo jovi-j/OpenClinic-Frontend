@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/apiService';
-import { PatientResponseDTO, PatientRequestDTO } from '../types/api';
+import type { PatientResponseDTO, PatientRequestDTO } from '../types/api';
 
 const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<PatientResponseDTO[]>([]);
@@ -19,8 +19,12 @@ const PatientList: React.FC = () => {
       const data = await ApiService.listPatients();
       setPatients(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        console.error("Unknown error.", err)
+      }
     } finally {
       setLoading(false);
     }
@@ -35,8 +39,9 @@ const PatientList: React.FC = () => {
     try {
       await ApiService.deletePatient(id);
       fetchPatients();
-    } catch (err: any) {
-      alert(`Error deleting patient: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) { alert(`Error deleting patient: ${err.message}`); }
+      else { console.error("Unknown error.", error) }
     }
   };
 
@@ -44,7 +49,7 @@ const PatientList: React.FC = () => {
     setEditingPatient(patient);
     setEditName(patient.person?.name || '');
     setEditCpf(patient.person?.cpf || '');
-    
+
     // Convert dd/MM/yyyy to yyyy-MM-dd for input type="date"
     const dob = patient.person?.dateOfBirth;
     if (dob) {
@@ -74,8 +79,9 @@ const PatientList: React.FC = () => {
       await ApiService.updatePatient(editingPatient.id, payload);
       setEditingPatient(null);
       fetchPatients();
-    } catch (err: any) {
-      alert(`Error updating patient: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) { alert(`Error updating patient: ${err.message}`); }
+        else{console.error("Unknown error.", err)}
     }
   };
 
@@ -111,13 +117,13 @@ const PatientList: React.FC = () => {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.person?.dateOfBirth}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{patient.membershipId}</td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button 
+                <button
                   onClick={() => openEditModal(patient)}
                   className="text-indigo-600 hover:text-indigo-900 mr-4"
                 >
                   Edit
                 </button>
-                <button 
+                <button
                   onClick={() => handleDelete(patient.id!)}
                   className="text-red-600 hover:text-red-900"
                 >
@@ -139,33 +145,33 @@ const PatientList: React.FC = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Edit Patient</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                <input 
-                  type="text" 
-                  value={editName} 
-                  onChange={e => setEditName(e.target.value)} 
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" 
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">CPF</label>
-                <input 
-                  type="text" 
-                  value={editCpf} 
-                  onChange={e => setEditCpf(e.target.value)} 
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" 
+                <input
+                  type="text"
+                  value={editCpf}
+                  onChange={e => setEditCpf(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-                <input 
-                  type="date" 
-                  value={editDob} 
-                  onChange={e => setEditDob(e.target.value)} 
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2" 
+                <input
+                  type="date"
+                  value={editDob}
+                  onChange={e => setEditDob(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2"
                 />
               </div>
             </div>

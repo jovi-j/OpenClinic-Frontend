@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/apiService';
-import { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO, type TicketQueueCallNextRequestDTO } from '../types/api';
+import type { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO, TicketQueueCallNextRequestDTO } from '../types/api';
 
 interface TicketListProps {
   role?: 'MEDIC' | 'ATTENDANT' | 'PATIENT' | 'KIOSK' | 'DISPLAY';
@@ -14,9 +14,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
   const [attendants, setAttendants] = useState<AttendantResponseDTO[]>([]);
   const [medics, setMedics] = useState<MedicResponseDTO[]>([]);
   const [patients, setPatients] = useState<PatientResponseDTO[]>([]);
-  
-  const [selectedAttendantId, setSelectedAttendantId] = useState<string>('');
-  const [selectedMedicId, setSelectedMedicId] = useState<string>('');
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [callingQueueId, setCallingQueueId] = useState<string | null>(null);
@@ -46,11 +44,11 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
         ApiService.listMedics(),
         ApiService.listPatients()
       ]);
-      
+
       // Filter queues for today using local date
       const today = getLocalDateString();
       const todaysQueues = queuesData.filter(q => q.date === today);
-      
+
       // Filter tickets that belong to today's queues
       const todaysQueueIds = new Set(todaysQueues.map(q => q.id));
       const todaysTickets = ticketsData.filter(t => t.ticketQueueId && todaysQueueIds.has(t.ticketQueueId));
@@ -61,8 +59,12 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       setMedics(medicsData);
       setPatients(patientsData);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        console.error("An unknown error has occurred", error)
+      }
     } finally {
       if (!silent) setLoading(false);
     }
@@ -72,7 +74,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     fetchData();
     const interval = setInterval(() => fetchData(true), 3000);
     return () => clearInterval(interval);
-  }, []);
+  });
 
   const handleCallNext = async (queueId: string, isGeneric: boolean) => {
     // Use the passed props instead of local state selectors
@@ -95,8 +97,9 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       };
       await ApiService.callNextTicket(payload);
       await fetchData();
-    } catch (err: any) {
-      alert(`Error calling next ticket: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) { console.error(`Error calling next ticket.`,err); }
+      else { console.error("Unknown error.", error)}
     } finally {
       setCallingQueueId(null);
     }
@@ -107,8 +110,9 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     try {
       await ApiService.completeTicket(ticketId);
       await fetchData();
-    } catch (err: any) {
-      alert(`Error completing ticket: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) { console.error(`Error completing ticket.`,err); }
+      else { console.error("Unknown error.", error) }
     }
   };
 
@@ -117,8 +121,9 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     try {
       await ApiService.markTicketUnredeemed(ticketId);
       await fetchData();
-    } catch (err: any) {
-      alert(`Error marking ticket as unredeemed: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) { console.error(`Error marking ticket as unredeemed.`,err); }
+      else { console.error("Unknown error.", error) }
     }
   };
 
@@ -144,12 +149,14 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       setShowRedirectModal(false);
       await fetchData();
       alert('Ticket redirected successfully!');
-    } catch (err: any) {
+    } catch (err: unknown) {
+     if(err instanceof Error){
       if (err.message.includes('appointment')) {
         alert('Error: This patient does not have a scheduled appointment with this medic today.');
       } else {
         alert(`Error redirecting ticket: ${err.message}`);
       }
+     }
     }
   };
 
@@ -168,7 +175,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     return true;
   });
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = patients.filter(p =>
     p.person?.name?.toLowerCase().includes(redirectSearchPatient.toLowerCase()) ||
     p.person?.cpf?.includes(redirectSearchPatient)
   );
@@ -207,7 +214,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
               const isGeneric = !queue.medicId;
               // Highlight if it's THIS medic's queue
               const isMyQueue = role === 'MEDIC' && queue.medicId === medicId;
-              
+
               return (
                 <div key={queue.id} className={`p-3 rounded border shadow-sm flex justify-between items-center ${isMyQueue ? 'bg-purple-50 border-purple-200' : 'bg-white'}`}>
                   <div>
@@ -250,7 +257,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
               const attendant = attendants.find(a => a.id === ticket.attendantId);
               const medic = medics.find(m => m.id === ticket.medicId);
               const isGenericQueue = !queue?.medicId;
-              
+
               return (
                 <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{ticket.ticketNum}</td>
@@ -327,7 +334,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Redirect Ticket to Medic</h3>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Select Medic</label>
               <select

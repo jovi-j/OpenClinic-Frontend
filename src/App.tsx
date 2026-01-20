@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import TicketList from './components/TicketList';
 import CreateTicketForm from './components/CreateTicketForm';
 import CreateTicketQueueForm from './components/CreateTicketQueueForm';
@@ -9,13 +9,13 @@ import KioskMode from './components/KioskMode';
 import TicketDisplay from './components/TicketDisplay';
 import LoginScreen from './components/LoginScreen';
 import AdminDashboard from './components/AdminDashboard';
-import { PatientResponseDTO, MedicResponseDTO, AttendantResponseDTO } from './types/api';
+import type { User } from './types/User';
 
 type Role = 'PATIENT' | 'MEDIC' | 'ATTENDANT' | 'KIOSK' | 'DISPLAY' | 'ADMIN' | null;
 
 function App() {
   const [role, setRole] = useState<Role>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null); // Stores the logged-in user object
+  const [currentUser, setCurrentUser] = useState<User | null>(null); // Stores the logged-in user object
 
   // 1. Kiosk & Display Modes (No Login Required)
   if (role === 'KIOSK') return <KioskMode onExit={() => setRole(null)} />;
@@ -29,7 +29,7 @@ function App() {
         <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
           <h1 className="text-3xl font-bold text-blue-600 mb-2">OpenClinic</h1>
           <p className="text-gray-500 mb-8">Select your role to continue</p>
-          
+
           <div className="space-y-4">
             <button onClick={() => setRole('PATIENT')} className="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200 transition-colors flex items-center justify-center">
               <span className="mr-2">👤</span> I am a Patient
@@ -40,7 +40,7 @@ function App() {
             <button onClick={() => setRole('ATTENDANT')} className="w-full py-3 px-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold rounded-lg border border-orange-200 transition-colors flex items-center justify-center">
               <span className="mr-2">📋</span> I am an Attendant
             </button>
-            
+
             <div className="pt-4 border-t border-gray-100 grid grid-cols-1 gap-2">
               <button onClick={() => setRole('ADMIN')} className="py-2 px-4 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors border border-gray-200 rounded-lg hover:bg-gray-50">
                 ⚙️ Administration Mode
@@ -63,8 +63,8 @@ function App() {
   // 3. Login Screen (If role selected but no user logged in)
   if (!currentUser) {
     return (
-      <LoginScreen 
-        type={role as 'PATIENT' | 'MEDIC' | 'ATTENDANT'} 
+      <LoginScreen
+        type={role as 'PATIENT' | 'MEDIC' | 'ATTENDANT'}
         onLogin={(user) => setCurrentUser(user)}
         onBack={() => setRole(null)}
       />
@@ -86,7 +86,7 @@ function App() {
             <span className="text-sm font-medium">
               Hello, {currentUser.person?.name}
             </span>
-            <button 
+            <button
               onClick={() => { setCurrentUser(null); setRole(null); }}
               className="text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded transition-colors"
             >
@@ -95,9 +95,9 @@ function App() {
           </div>
         </div>
       </header>
-      
+
       <main className="container mx-auto px-6 py-10 space-y-12">
-        
+
         {/* PATIENT DASHBOARD */}
         {role === 'PATIENT' && (
           <>
@@ -176,7 +176,7 @@ function App() {
                 <div className="w-1 h-8 bg-orange-600 rounded-full mr-3"></div>
                 <h2 className="text-2xl font-bold text-gray-800">Reception Desk</h2>
               </div>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <div className="lg:col-span-1 space-y-8">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -192,7 +192,7 @@ function App() {
                     <CreateTicketForm />
                   </div>
                 </div>
-                
+
                 <div className="lg:col-span-2">
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full">
                     <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">

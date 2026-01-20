@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ApiService } from '../services/apiService';
-import { GroupedAppointmentsDTO, AvailableAppointmentTimeDTO, MedicResponseDTO, PatientResponseDTO } from '../types/api';
+import type { GroupedAppointmentsDTO, AvailableAppointmentTimeDTO, MedicResponseDTO, PatientResponseDTO } from '../types/api';
 
 interface AppointmentSchedulerProps {
   patientId?: string; // If provided (e.g. logged in patient), pre-select and hide search
@@ -10,15 +10,15 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
   // Data for search
   const [allMedics, setAllMedics] = useState<MedicResponseDTO[]>([]);
   const [allPatients, setAllPatients] = useState<PatientResponseDTO[]>([]);
-  
+
   // Selection states
   const [medicId, setMedicId] = useState('');
   const [patientId, setPatientId] = useState(propPatientId || '');
-  
+
   // Search inputs
   const [medicSearch, setMedicSearch] = useState('');
   const [patientSearch, setPatientSearch] = useState('');
-  
+
   // UI states
   const [showMedicOptions, setShowMedicOptions] = useState(false);
   const [showPatientOptions, setShowPatientOptions] = useState(false);
@@ -68,27 +68,27 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
   // Filter logic
   const filteredMedics = allMedics.filter(m => {
     const search = medicSearch.toLowerCase();
-    return m.person?.name?.toLowerCase().includes(search) || 
+    return m.person?.name?.toLowerCase().includes(search) ||
            m.crm?.toLowerCase().includes(search) ||
            m.type?.toLowerCase().includes(search);
   });
 
   const filteredPatients = allPatients.filter(p => {
     const search = patientSearch.toLowerCase();
-    return p.person?.name?.toLowerCase().includes(search) || 
+    return p.person?.name?.toLowerCase().includes(search) ||
            p.person?.cpf?.includes(search);
   });
 
   const fetchAvailableSlots = async (id: string) => {
     if (!id) return;
-    
+
     setLoading(true);
     setMessage(null);
     setAvailableSlots([]);
     setSelectedSlotId(null);
     setSelectedMonth('');
     setSelectedDay('');
-    
+
     try {
       const data = await ApiService.getAvailableAppointmentsByMedic(id);
       setAvailableSlots(data);
@@ -128,14 +128,14 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
         patientId,
         appointmentId: selectedSlotId
       });
-      
+
       const date = new Date(`${result.date}T${result.hour?.toString().padStart(2, '0')}:${result.minute?.toString().padStart(2, '0')}:00`);
       const formattedDate = date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const formattedTime = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
-      setMessage({ 
-        type: 'success', 
-        text: `Appointment scheduled successfully for ${formattedDate} at ${formattedTime}` 
+      setMessage({
+        type: 'success',
+        text: `Appointment scheduled successfully for ${formattedDate} at ${formattedTime}`
       });
       // Refresh slots
       if (medicId) fetchAvailableSlots(medicId);
@@ -218,7 +218,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
               </div>
             )}
           </div>
-          
+
           {showMedicOptions && medicSearch && (
             <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
               {filteredMedics.length > 0 ? (
@@ -242,7 +242,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
             </div>
           )}
         </div>
-        
+
         {/* Patient Search (Hidden if patientId is provided via props) */}
         {!propPatientId && (
           <div className="flex-1 relative" ref={patientWrapperRef}>
@@ -259,7 +259,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 border"
               placeholder="Search by Name or CPF..."
             />
-            
+
             {showPatientOptions && patientSearch && (
               <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
                 {filteredPatients.length > 0 ? (
@@ -288,7 +288,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({ patientId: 
 
       {message && (
         <div className={`mb-6 p-4 rounded-md flex items-start ${
-          message.type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' : 
+          message.type === 'error' ? 'bg-red-50 text-red-800 border border-red-100' :
           message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-100' :
           'bg-blue-50 text-blue-800 border border-blue-100'
         }`}>
