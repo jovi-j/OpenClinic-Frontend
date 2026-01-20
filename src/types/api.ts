@@ -31,6 +31,12 @@ export interface TicketQueueResponseDTO {
   consultationRoom?: number;
 }
 
+export interface TicketQueueCallNextRequestDTO {
+  ticketQueueId?: string;
+  attendantId?: string;
+  medicId?: string;
+}
+
 export interface ScheduleRequestDTO {
   medicId?: string;
   month?: number;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiService } from '../services/apiService';
-import { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO } from '../types/api';
+import { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO, type TicketQueueCallNextRequestDTO } from '../types/api';
 
 interface TicketListProps {
   role?: 'MEDIC' | 'ATTENDANT' | 'PATIENT' | 'KIOSK' | 'DISPLAY';
@@ -64,13 +64,13 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000);
+    const interval = setInterval(() => fetchData(true), 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -88,8 +88,12 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
 
     setCallingQueueId(queueId);
     try {
-      // Pass the logged-in attendant ID if generic queue
-      await ApiService.callNextTicket(queueId, (isGeneric && role === 'ATTENDANT') ? attendantId : undefined);
+      const payload: TicketQueueCallNextRequestDTO = {
+        ticketQueueId: queueId || undefined,
+        attendantId: attendantId || undefined,
+        medicId: medicId || undefined,
+      };
+      await ApiService.callNextTicket(payload);
       await fetchData();
     } catch (err: any) {
       alert(`Error calling next ticket: ${err.message}`);

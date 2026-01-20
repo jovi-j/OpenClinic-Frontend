@@ -18,7 +18,8 @@ import {
   GroupedAppointmentsDTO,
   AppointmentResponseDTO,
   TicketRedirectDTO,
-  Page
+  Page,
+  type TicketQueueCallNextRequestDTO
 } from '../types/api';
 
 // Use environment variable if available
@@ -114,14 +115,13 @@ export const ApiService = {
     });
     return handleResponse<TicketQueueResponseDTO>(response);
   },
-  callNextTicket: async (queueId: string, attendantId?: string): Promise<TicketResponseDTO> => {
-    const url = new URL(`${BASE_URL}/ticket-queues/${queueId}/call-next`, window.location.origin);
-    if (attendantId) {
-      url.searchParams.append('attendantId', attendantId);
-    }
+  callNextTicket: async (data: TicketQueueCallNextRequestDTO): Promise<TicketResponseDTO> => {
+    const url = new URL(`${BASE_URL}/ticket-queues/call-next`, window.location.origin);
+    console.log(data);
     const response = await fetch(url.toString(), {
       method: 'POST',
-      headers
+      headers,
+      body: JSON.stringify(data),
     });
     return handleResponse<TicketResponseDTO>(response);
   },
