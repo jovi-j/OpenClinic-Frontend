@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-import { ApiService } from '../services/apiService';
-import type { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO, TicketQueueCallNextRequestDTO } from '../types/api';
-import { useInterval } from '../helpers/polling';
+import React, { useState } from "react";
+import { ApiService } from "../services/apiService";
+import type {
+  TicketResponseDTO,
+  TicketQueueResponseDTO,
+  AttendantResponseDTO,
+  MedicResponseDTO,
+  PatientResponseDTO,
+  TicketQueueCallNextRequestDTO,
+} from "../types/api";
+import { useInterval } from "../helpers/polling";
 
 interface TicketListProps {
-  role?: 'MEDIC' | 'ATTENDANT' | 'PATIENT' | 'KIOSK' | 'DISPLAY';
+  role?: "MEDIC" | "ATTENDANT" | "PATIENT" | "KIOSK" | "DISPLAY";
   attendantId?: string; // Passed when role is ATTENDANT
-  medicId?: string;     // Passed when role is MEDIC
+  medicId?: string; // Passed when role is MEDIC
 }
 
-const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) => {
+const TicketList: React.FC<TicketListProps> = ({
+  role,
+  attendantId,
+  medicId,
+}) => {
   const [tickets, setTickets] = useState<TicketResponseDTO[]>([]);
   const [queues, setQueues] = useState<TicketQueueResponseDTO[]>([]);
   const [attendants, setAttendants] = useState<AttendantResponseDTO[]>([]);
@@ -23,36 +34,44 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
   // Redirect Modal State
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const [redirectTicketId, setRedirectTicketId] = useState<string | null>(null);
-  const [redirectMedicId, setRedirectMedicId] = useState('');
-  const [redirectPatientId, setRedirectPatientId] = useState('');
-  const [redirectSearchPatient, setRedirectSearchPatient] = useState('');
+  const [redirectMedicId, setRedirectMedicId] = useState("");
+  const [redirectPatientId, setRedirectPatientId] = useState("");
+  const [redirectSearchPatient, setRedirectSearchPatient] = useState("");
 
   const getLocalDateString = () => {
     const date = new Date();
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
   const fetchData = async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const [ticketsData, queuesData, attendantsData, medicsData, patientsData] = await Promise.all([
+      const [
+        ticketsData,
+        queuesData,
+        attendantsData,
+        medicsData,
+        patientsData,
+      ] = await Promise.all([
         ApiService.listTickets(),
         ApiService.listTicketQueues(),
         ApiService.listAttendants(),
         ApiService.listMedics(),
-        ApiService.listPatients()
+        ApiService.listPatients(),
       ]);
 
       // Filter queues for today using local date
       const today = getLocalDateString();
-      const todaysQueues = queuesData.filter(q => q.date === today);
+      const todaysQueues = queuesData.filter((q) => q.date === today);
 
       // Filter tickets that belong to today's queues
-      const todaysQueueIds = new Set(todaysQueues.map(q => q.id));
-      const todaysTickets = ticketsData.filter(t => t.ticketQueueId && todaysQueueIds.has(t.ticketQueueId));
+      const todaysQueueIds = new Set(todaysQueues.map((q) => q.id));
+      const todaysTickets = ticketsData.filter(
+        (t) => t.ticketQueueId && todaysQueueIds.has(t.ticketQueueId),
+      );
 
       setTickets(todaysTickets);
       setQueues(todaysQueues);
@@ -64,24 +83,26 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        console.error("An unknown error has occurred", error)
+        console.error("An unknown error has occurred", error);
       }
     } finally {
       if (!silent) setLoading(false);
     }
   };
 
-  useInterval(() => { fetchData(true) }, 1000 )
+  useInterval(() => {
+    fetchData(true);
+  }, 1000);
 
   const handleCallNext = async (queueId: string, isGeneric: boolean) => {
     // Use the passed props instead of local state selectors
-    if (isGeneric && role === 'ATTENDANT' && !attendantId) {
-      alert('Error: No attendant ID found. Please re-login.');
+    if (isGeneric && role === "ATTENDANT" && !attendantId) {
+      alert("Error: No attendant ID found. Please re-login.");
       return;
     }
 
-    if (isGeneric && role === 'MEDIC' && !medicId) {
-      alert('Error: No medic ID found. Please re-login.');
+    if (isGeneric && role === "MEDIC" && !medicId) {
+      alert("Error: No medic ID found. Please re-login.");
       return;
     }
 
@@ -95,86 +116,106 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       await ApiService.callNextTicket(payload);
       await fetchData();
     } catch (err: unknown) {
-      if (err instanceof Error) { console.error(`Error calling next ticket.`,err); }
-      else { console.error("Unknown error.", error)}
+      if (err instanceof Error) {
+        console.error(`Error calling next ticket.`, err);
+      } else {
+        console.error("Unknown error.", error);
+      }
     } finally {
       setCallingQueueId(null);
     }
   };
 
   const handleComplete = async (ticketId: string) => {
-    if (!window.confirm('Are you sure you want to complete this appointment?')) return;
+    if (!window.confirm("Are you sure you want to complete this appointment?"))
+      return;
     try {
       await ApiService.completeTicket(ticketId);
       await fetchData();
     } catch (err: unknown) {
-      if (err instanceof Error) { console.error(`Error completing ticket.`,err); }
-      else { console.error("Unknown error.", error) }
+      if (err instanceof Error) {
+        console.error(`Error completing ticket.`, err);
+      } else {
+        console.error("Unknown error.", error);
+      }
     }
   };
 
   const handleUnredeemed = async (ticketId: string) => {
-    if (!window.confirm('Are you sure you want to mark this ticket as unredeemed?')) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to mark this ticket as unredeemed?",
+      )
+    )
+      return;
     try {
       await ApiService.markTicketUnredeemed(ticketId);
       await fetchData();
     } catch (err: unknown) {
-      if (err instanceof Error) { console.error(`Error marking ticket as unredeemed.`,err); }
-      else { console.error("Unknown error.", error) }
+      if (err instanceof Error) {
+        console.error(`Error marking ticket as unredeemed.`, err);
+      } else {
+        console.error("Unknown error.", error);
+      }
     }
   };
 
   const openRedirectModal = (ticketId: string) => {
     setRedirectTicketId(ticketId);
-    setRedirectMedicId('');
-    setRedirectPatientId('');
-    setRedirectSearchPatient('');
+    setRedirectMedicId("");
+    setRedirectPatientId("");
+    setRedirectSearchPatient("");
     setShowRedirectModal(true);
   };
 
   const handleRedirect = async () => {
     if (!redirectTicketId || !redirectMedicId || !redirectPatientId) {
-      alert('Please select both a medic and a patient.');
+      alert("Please select both a medic and a patient.");
       return;
     }
 
     try {
       await ApiService.redirectTicket(redirectTicketId, {
         medicId: redirectMedicId,
-        patientId: redirectPatientId
+        patientId: redirectPatientId,
       });
       setShowRedirectModal(false);
       await fetchData();
-      alert('Ticket redirected successfully!');
+      alert("Ticket redirected successfully!");
     } catch (err: unknown) {
-     if(err instanceof Error){
-      if (err.message.includes('appointment')) {
-        alert('Error: This patient does not have a scheduled appointment with this medic today.');
-      } else {
-        alert(`Error redirecting ticket: ${err.message}`);
+      if (err instanceof Error) {
+        if (err.message.includes("appointment")) {
+          alert(
+            "Error: This patient does not have a scheduled appointment with this medic today.",
+          );
+        } else {
+          alert(`Error redirecting ticket: ${err.message}`);
+        }
       }
-     }
     }
   };
 
   const getQueueDisplayName = (queue: TicketQueueResponseDTO) => {
     if (queue.medicId) {
-      const medic = medics.find(m => m.id === queue.medicId);
-      return `${medic?.person?.name || 'Medic'}'s Queue (Room ${queue.consultationRoom || '?'})`;
+      const medic = medics.find((m) => m.id === queue.medicId);
+      return `${medic?.person?.name || "Medic"}'s Queue (Room ${queue.consultationRoom || "?"})`;
     }
-    return 'General Queue';
+    return "General Queue";
   };
 
-  const filteredQueues = queues.filter(queue => {
+  const filteredQueues = queues.filter((queue) => {
     const isGeneric = !queue.medicId;
-    if (role === 'MEDIC') return !isGeneric;
-    if (role === 'ATTENDANT') return isGeneric;
+    if (role === "MEDIC") return !isGeneric;
+    if (role === "ATTENDANT") return isGeneric;
     return true;
   });
 
-  const filteredPatients = patients.filter(p =>
-    p.person?.name?.toLowerCase().includes(redirectSearchPatient.toLowerCase()) ||
-    p.person?.cpf?.includes(redirectSearchPatient)
+  const filteredPatients = patients.filter(
+    (p) =>
+      p.person?.name
+        ?.toLowerCase()
+        .includes(redirectSearchPatient.toLowerCase()) ||
+      p.person?.cpf?.includes(redirectSearchPatient),
   );
 
   if (loading && tickets.length === 0) {
@@ -192,7 +233,10 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
         <div className="bg-red-50 text-red-700 p-4 rounded-lg inline-block max-w-md">
           <p className="font-medium">Failed to load tickets</p>
           <p className="text-sm mt-1">{error}</p>
-          <button onClick={() => fetchData()} className="mt-3 text-sm bg-white border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors">
+          <button
+            onClick={() => fetchData()}
+            className="mt-3 text-sm bg-white border border-red-200 px-3 py-1 rounded hover:bg-red-50 transition-colors"
+          >
             Retry
           </button>
         </div>
@@ -203,34 +247,47 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
   return (
     <div className="space-y-6 relative">
       {/* Queue Management - Only visible for MEDIC and ATTENDANT */}
-      {(role === 'MEDIC' || role === 'ATTENDANT') && (
+      {(role === "MEDIC" || role === "ATTENDANT") && (
         <div className="bg-gray-50 p-4 border-b border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Queue Controls</h4>
+          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+            Queue Controls
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredQueues.map(queue => {
+            {filteredQueues.map((queue) => {
               const isGeneric = !queue.medicId;
               // Highlight if it's THIS medic's queue
-              const isMyQueue = role === 'MEDIC' && queue.medicId === medicId;
+              const isMyQueue = role === "MEDIC" && queue.medicId === medicId;
 
               return (
-                <div key={queue.id} className={`p-3 rounded border shadow-sm flex justify-between items-center ${isMyQueue ? 'bg-purple-50 border-purple-200' : 'bg-white'}`}>
+                <div
+                  key={queue.id}
+                  className={`p-3 rounded border shadow-sm flex justify-between items-center ${isMyQueue ? "bg-purple-50 border-purple-200" : "bg-white"}`}
+                >
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{getQueueDisplayName(queue)}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {getQueueDisplayName(queue)}
+                    </div>
                     <div className="text-xs text-gray-500">{queue.date}</div>
                   </div>
                   <button
                     onClick={() => handleCallNext(queue.id!, isGeneric)}
                     disabled={callingQueueId === queue.id}
                     className={`px-3 py-1 text-white text-xs font-medium rounded disabled:opacity-50 transition-colors ${
-                      isMyQueue ? 'bg-purple-600 hover:bg-purple-700' : 'bg-green-600 hover:bg-green-700'
+                      isMyQueue
+                        ? "bg-purple-600 hover:bg-purple-700"
+                        : "bg-green-600 hover:bg-green-700"
                     }`}
                   >
-                    {callingQueueId === queue.id ? 'Calling...' : 'Call Next'}
+                    {callingQueueId === queue.id ? "Calling..." : "Call Next"}
                   </button>
                 </div>
               );
             })}
-            {filteredQueues.length === 0 && <p className="text-sm text-gray-500 italic">No active queues available for your role.</p>}
+            {filteredQueues.length === 0 && (
+              <p className="text-sm text-gray-500 italic">
+                No active queues available for your role.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -240,83 +297,132 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket #</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Queue Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Called By</th>
-              {(role === 'ATTENDANT' || role === 'MEDIC') && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ticket #
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Priority
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Queue Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Called By
+              </th>
+              {(role === "ATTENDANT" || role === "MEDIC") && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {tickets.map((ticket) => {
-              const queue = queues.find(q => q.id === ticket.ticketQueueId);
-              const attendant = attendants.find(a => a.id === ticket.attendantId);
-              const medic = medics.find(m => m.id === ticket.medicId);
+              const queue = queues.find((q) => q.id === ticket.ticketQueueId);
+              const attendant = attendants.find(
+                (a) => a.id === ticket.attendantId,
+              );
+              const medic = medics.find((m) => m.id === ticket.medicId);
               const isGenericQueue = !queue?.medicId;
 
               return (
-                <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{ticket.ticketNum}</td>
+                <tr
+                  key={ticket.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    #{ticket.ticketNum}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      ticket.ticketPriority === 'PRT' ? 'bg-yellow-100 text-yellow-800' :
-                      ticket.ticketPriority === 'ERT' ? 'bg-green-100 text-green-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {ticket.ticketPriority === 'NMT' ? 'Normal' : ticket.ticketPriority === 'PRT' ? 'Preferential' : 'Exam Results'}
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        ticket.ticketPriority === "PRT"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : ticket.ticketPriority === "ERT"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {ticket.ticketPriority === "NMT"
+                        ? "Normal"
+                        : ticket.ticketPriority === "PRT"
+                          ? "Preferential"
+                          : "Exam Results"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      ticket.status === 'SERVED' ? 'bg-gray-100 text-gray-800' :
-                      ticket.status === 'UNREDEEMED' ? 'bg-red-100 text-red-800' :
-                      ticket.status === 'CALLED_BY_ATTENDANT' ? 'bg-orange-100 text-orange-800' :
-                      ticket.status === 'CALLED_BY_MEDIC' ? 'bg-purple-100 text-purple-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                        ticket.status === 'SERVED' ? 'bg-gray-400' :
-                        ticket.status === 'UNREDEEMED' ? 'bg-red-400' :
-                        ticket.status === 'CALLED_BY_ATTENDANT' ? 'bg-orange-400' :
-                        ticket.status === 'CALLED_BY_MEDIC' ? 'bg-purple-400' :
-                        'bg-green-400'
-                      }`}></span>
-                      {ticket.status?.replace(/_/g, ' ')}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        ticket.status === "SERVED"
+                          ? "bg-gray-100 text-gray-800"
+                          : ticket.status === "UNREDEEMED"
+                            ? "bg-red-100 text-red-800"
+                            : ticket.status === "CALLED_BY_ATTENDANT"
+                              ? "bg-orange-100 text-orange-800"
+                              : ticket.status === "CALLED_BY_MEDIC"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                          ticket.status === "SERVED"
+                            ? "bg-gray-400"
+                            : ticket.status === "UNREDEEMED"
+                              ? "bg-red-400"
+                              : ticket.status === "CALLED_BY_ATTENDANT"
+                                ? "bg-orange-400"
+                                : ticket.status === "CALLED_BY_MEDIC"
+                                  ? "bg-purple-400"
+                                  : "bg-green-400"
+                        }`}
+                      ></span>
+                      {ticket.status?.replace(/_/g, " ")}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {queue ? getQueueDisplayName(queue) : 'Unknown'}
+                    {queue ? getQueueDisplayName(queue) : "Unknown"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {medic ? `Medic: ${medic.person?.name}` : (attendant ? `Attendant: ${attendant.person?.name}` : '-')}
+                    {medic
+                      ? `Medic: ${medic.person?.name}`
+                      : attendant
+                        ? `Attendant: ${attendant.person?.name}`
+                        : "-"}
                   </td>
-                  {(role === 'ATTENDANT' || role === 'MEDIC') && (
+                  {(role === "ATTENDANT" || role === "MEDIC") && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
-                      {role === 'ATTENDANT' && isGenericQueue && ticket.status !== 'UNREDEEMED' && (
-                        <>
+                      {role === "ATTENDANT" &&
+                        isGenericQueue &&
+                        ticket.status !== "UNREDEEMED" && (
+                          <>
+                            <button
+                              onClick={() => openRedirectModal(ticket.id!)}
+                              className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md border border-indigo-200"
+                            >
+                              Redirect
+                            </button>
+                            <button
+                              onClick={() => handleUnredeemed(ticket.id!)}
+                              className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md border border-red-200"
+                            >
+                              Unredeemed
+                            </button>
+                          </>
+                        )}
+                      {role === "MEDIC" &&
+                        !isGenericQueue &&
+                        ticket.status === "CALLED_BY_MEDIC" && (
                           <button
-                            onClick={() => openRedirectModal(ticket.id!)}
-                            className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded-md border border-indigo-200"
+                            onClick={() => handleComplete(ticket.id!)}
+                            className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md border border-green-200"
                           >
-                            Redirect
+                            Finish
                           </button>
-                          <button
-                            onClick={() => handleUnredeemed(ticket.id!)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md border border-red-200"
-                          >
-                            Unredeemed
-                          </button>
-                        </>
-                      )}
-                      {role === 'MEDIC' && !isGenericQueue && ticket.status === 'CALLED_BY_MEDIC' && (
-                        <button
-                          onClick={() => handleComplete(ticket.id!)}
-                          className="text-green-600 hover:text-green-900 bg-green-50 px-3 py-1 rounded-md border border-green-200"
-                        >
-                          Finish
-                        </button>
-                      )}
+                        )}
                     </td>
                   )}
                 </tr>
@@ -330,24 +436,32 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
       {showRedirectModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Redirect Ticket to Medic</h3>
+            <h3 className="text-xl font-bold mb-4 text-gray-800">
+              Redirect Ticket to Medic
+            </h3>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Medic</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Medic
+              </label>
               <select
                 value={redirectMedicId}
                 onChange={(e) => setRedirectMedicId(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
               >
                 <option value="">Select a Medic</option>
-                {medics.map(m => (
-                  <option key={m.id} value={m.id}>{m.person?.name} ({m.type})</option>
+                {medics.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.person?.name} ({m.type})
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Patient</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Patient
+              </label>
               <input
                 type="text"
                 placeholder="Search patient by name or CPF..."
@@ -356,16 +470,20 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border mb-2"
               />
               <div className="max-h-40 overflow-y-auto border rounded-md">
-                {filteredPatients.map(p => (
+                {filteredPatients.map((p) => (
                   <div
                     key={p.id}
                     onClick={() => setRedirectPatientId(p.id!)}
-                    className={`p-2 cursor-pointer hover:bg-gray-100 text-sm ${redirectPatientId === p.id ? 'bg-indigo-50 text-indigo-700 font-medium' : ''}`}
+                    className={`p-2 cursor-pointer hover:bg-gray-100 text-sm ${redirectPatientId === p.id ? "bg-indigo-50 text-indigo-700 font-medium" : ""}`}
                   >
                     {p.person?.name} (CPF: {p.person?.cpf})
                   </div>
                 ))}
-                {filteredPatients.length === 0 && <div className="p-2 text-gray-500 text-sm">No patients found</div>}
+                {filteredPatients.length === 0 && (
+                  <div className="p-2 text-gray-500 text-sm">
+                    No patients found
+                  </div>
+                )}
               </div>
             </div>
 
