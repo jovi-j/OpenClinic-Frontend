@@ -71,11 +71,7 @@ const TicketList: React.FC<TicketListProps> = ({ role, attendantId, medicId }) =
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(() => fetchData(true), 3000);
-    return () => clearInterval(interval);
-  });
+  useInterval(() => { fetchData(true) }, 1000 )
 
   const handleCallNext = async (queueId: string, isGeneric: boolean) => {
     // Use the passed props instead of local state selectors

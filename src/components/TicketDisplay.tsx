@@ -40,12 +40,9 @@ const TicketDisplay: React.FC<{ onExit: () => void }> = ({ onExit }) => {
     }
   };
 
-  useEffect(() => {
+  useInterval(() => {
     fetchData();
-    const interval = setInterval(fetchData, 2000); // Poll every 2 seconds
-    return () => clearInterval(interval);
-  }, []);
-
+  }, 5000);
   const today = getLocalDateString();
 
   // Filter logic to determine which tickets should be displayed as "Called"
