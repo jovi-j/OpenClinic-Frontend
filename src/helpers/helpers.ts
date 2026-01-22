@@ -41,3 +41,7 @@ export const formatDay = (dateString: string) => {
   const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
   return adjustedDate.toLocaleDateString(undefined, { day: "numeric" });
 };
+
+export function unwrap<T>(result: PromiseSettledResult<T[]>): T[] {
+  return result.status === "fulfilled" ? result.value : [];
+}

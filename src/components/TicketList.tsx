@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ApiService } from "../services/apiService";
 import type {
   TicketResponseDTO,
@@ -9,6 +9,7 @@ import type {
   TicketQueueCallNextRequestDTO,
 } from "../types/api";
 import { useInterval } from "../helpers/polling";
+import { unwrap } from "../helpers/helpers";
 
 interface TicketListProps {
   role?: "MEDIC" | "ATTENDANT" | "PATIENT" | "KIOSK" | "DISPLAY";
@@ -46,22 +47,27 @@ const TicketList: React.FC<TicketListProps> = ({
     return `${year}-${month}-${day}`;
   };
 
-  const fetchData = async (silent = false) => {
-    if (!silent) setLoading(true);
+  const fetchData = async () => {
     try {
       const [
-        ticketsData,
-        queuesData,
-        attendantsData,
-        medicsData,
-        patientsData,
-      ] = await Promise.all([
+        ticketsResult,
+        queuesResult,
+        attendantsResult,
+        medicsResult,
+        patientsResult,
+      ] = await Promise.allSettled([
         ApiService.listTickets(),
         ApiService.listTicketQueues(),
         ApiService.listAttendants(),
         ApiService.listMedics(),
         ApiService.listPatients(),
       ]);
+
+      const ticketsData = unwrap(ticketsResult);
+      const queuesData = unwrap(queuesResult);
+      const attendantsData = unwrap(attendantsResult);
+      const medicsData = unwrap(medicsResult);
+      const patientsData = unwrap(patientsResult);
 
       // Filter queues for today using local date
       const today = getLocalDateString();
@@ -79,20 +85,26 @@ const TicketList: React.FC<TicketListProps> = ({
       setMedics(medicsData);
       setPatients(patientsData);
       setError(null);
+      if (loading) {
+        setLoading(false);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
+        console.error("An unknown error has occurred", err);
         setError(err.message);
       } else {
-        console.error("An unknown error has occurred", error);
+        console.error("An unknown error has occurred", err);
       }
-    } finally {
-      if (!silent) setLoading(false);
     }
   };
 
   useInterval(() => {
-    fetchData(true);
+    fetchData();
   }, 1000);
+
+  useEffect(() => {
+    setLoading(true);
+  }, []);
 
   const handleCallNext = async (queueId: string, isGeneric: boolean) => {
     // Use the passed props instead of local state selectors
@@ -218,7 +230,7 @@ const TicketList: React.FC<TicketListProps> = ({
       p.person?.cpf?.includes(redirectSearchPatient),
   );
 
-  if (loading && tickets.length === 0) {
+  if (loading) {
     return (
       <div className="p-8 text-center">
         <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
