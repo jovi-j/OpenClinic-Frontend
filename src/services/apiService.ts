@@ -21,6 +21,7 @@ import type {
   Page,
   TicketQueueCallNextRequestDTO,
 } from "../types/api";
+import type { SearchCriteria } from "../types/searchCriteria";
 
 // Use environment variable if available
 // Otherwise, use the proxy path '/api' which Vite will forward to the backend
@@ -139,7 +140,6 @@ export const ApiService = {
       `${BASE_URL}/ticket-queues/call-next`,
       window.location.origin,
     );
-    console.log(data);
     const response = await fetch(url.toString(), {
       method: "POST",
       headers,
@@ -335,12 +335,7 @@ export const ApiService = {
     return handleResponse<void>(response);
   },
   searchAppointments: async (
-    criteria: {
-      patientId?: string;
-      date?: string;
-      medicId?: string;
-      status?: string;
-    },
+    criteria: SearchCriteria,
     page: number = 0,
     size: number = 10,
   ): Promise<Page<AppointmentResponseDTO>> => {
