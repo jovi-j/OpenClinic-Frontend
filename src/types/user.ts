@@ -1,4 +1,4 @@
-import type { Person } from "./Person";
+import type { Person } from "./person";
 
 export interface User {
   id?: string,
