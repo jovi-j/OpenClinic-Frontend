@@ -1,13 +1,19 @@
 export interface TicketRequestDTO {
   ticketQueueId?: string;
-  ticketPriority?: 'NMT' | 'ERT' | 'PRT';
+  ticketPriority?: "NMT" | "ERT" | "PRT";
 }
 
 export interface TicketResponseDTO {
   id?: string;
   ticketNum?: number;
-  ticketPriority?: 'NMT' | 'ERT' | 'PRT';
-  status?: 'WAITING ATTENDANT' | 'WAITING APPOINTMENT' | 'UNREDEEMED' | 'SERVED' | 'CALLED_BY_ATTENDANT' | 'CALLED_BY_MEDIC';
+  ticketPriority?: "NMT" | "ERT" | "PRT";
+  status?:
+    | "WAITING ATTENDANT"
+    | "WAITING APPOINTMENT"
+    | "UNREDEEMED"
+    | "SERVED"
+    | "CALLED_BY_ATTENDANT"
+    | "CALLED_BY_MEDIC";
   ticketQueueId?: string;
   medicId?: string;
   attendantId?: string;
@@ -55,7 +61,19 @@ export interface ScheduleRequestDTO {
 export interface ScheduleResponseDTO {
   id?: string;
   medicId?: string;
-  month?: 'JANUARY' | 'FEBRUARY' | 'MARCH' | 'APRIL' | 'MAY' | 'JUNE' | 'JULY' | 'AUGUST' | 'SEPTEMBER' | 'OCTOBER' | 'NOVEMBER' | 'DECEMBER';
+  month?:
+    | "JANUARY"
+    | "FEBRUARY"
+    | "MARCH"
+    | "APRIL"
+    | "MAY"
+    | "JUNE"
+    | "JULY"
+    | "AUGUST"
+    | "SEPTEMBER"
+    | "OCTOBER"
+    | "NOVEMBER"
+    | "DECEMBER";
   year?: {
     value?: number;
     leap?: boolean;
@@ -132,7 +150,7 @@ export interface AppointmentResponseDTO {
   id?: string;
   date?: string;
   time?: LocalTime;
-  status?: 'OPEN' | 'SCHEDULED' | 'ATTENDED' | 'CANCELLED' | 'ABSENT PATIENT';
+  status?: "OPEN" | "SCHEDULED" | "ATTENDED" | "CANCELLED" | "ABSENT PATIENT";
   patientId?: string;
   patientName?: string;
   medicId?: string;

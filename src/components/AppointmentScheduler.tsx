@@ -271,7 +271,10 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
       <div className="flex flex-row">
         {selectedMonth && (
           <DaySelector
-            avaliableDates={getDaysForMonth({ availableSlots: doctorAvaliableSlots, selectedMonth })}
+            avaliableDates={getDaysForMonth({
+              availableSlots: doctorAvaliableSlots,
+              selectedMonth,
+            })}
             selectedDay={selectedDay}
             handleChangeDay={handleDayClick}
           />
@@ -279,7 +282,10 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
 
         {selectedDay && (
           <TimeSelector
-            avaliableSlots={getSlotsForDay({ availableSlots: doctorAvaliableSlots, selectedDay })}
+            avaliableSlots={getSlotsForDay({
+              availableSlots: doctorAvaliableSlots,
+              selectedDay,
+            })}
             selectedSlotId={selectedSlotId}
             handleSlotTimeClick={handleTimeClick}
           />
@@ -297,8 +303,9 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
         </div>
       )}
 
-      {message && <MessageDisplay message={message} onClose={handleCloseMessage}  />}
-
+      {message && (
+        <MessageDisplay message={message} onClose={handleCloseMessage} />
+      )}
     </div>
   );
 };
