@@ -111,10 +111,8 @@ function App() {
                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
                       <h3 className="font-semibold text-gray-700">Book Appointment</h3>
                    </div>
-                   {/* Pass logged-in patient ID to scheduler */}
                   <AppointmentScheduler patientId={currentUser.id} />
                 </div>
-                {/* Removed "Get a Ticket" section for patients as requested */}
               </div>
             </section>
 

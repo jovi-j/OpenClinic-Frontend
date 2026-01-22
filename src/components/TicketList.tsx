@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ApiService } from '../services/apiService';
 import type { TicketResponseDTO, TicketQueueResponseDTO, AttendantResponseDTO, MedicResponseDTO, PatientResponseDTO, TicketQueueCallNextRequestDTO } from '../types/api';
+import { useInterval } from '../helpers/polling';
 
 interface TicketListProps {
   role?: 'MEDIC' | 'ATTENDANT' | 'PATIENT' | 'KIOSK' | 'DISPLAY';
