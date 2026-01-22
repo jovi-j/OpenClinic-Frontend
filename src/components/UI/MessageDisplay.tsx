@@ -8,21 +8,23 @@ export interface MessageType {
 interface MessageDisplayProps {
   message: MessageType | null;
   onClose: () => void;
+  delay?: number;
 }
 
 const MessageDisplay: React.FC<MessageDisplayProps> = ({
   message,
   onClose,
+  delay = 3,
 }) => {
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
         onClose();
-      }, 3000);
+      }, delay * 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [message, onClose]);
+  }, [message, onClose, delay]);
 
   if (!message) {
     return null;
