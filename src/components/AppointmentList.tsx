@@ -115,24 +115,12 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
     }
   };
 
-  const formatTime = (time: any) => {
-    if (!time) return '';
-    
-    // If it's a string "HH:MM:SS"
-    if (typeof time === 'string') {
-      const parts = time.split(':');
-      if (parts.length >= 2) {
-        return `${parts[0]}:${parts[1]}`;
-      }
-      return time;
+  const formatTime = (time: string) => {
+    const parts = time.split(":");
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
     }
-    
-    // Fallback for object format if backend changes back
-    if (time.hour !== undefined && time.minute !== undefined) {
-      return `${time.hour.toString().padStart(2, '0')}:${time.minute.toString().padStart(2, '0')}`;
-    }
-    
-    return String(time);
+    return time;
   };
 
   const formatDate = (dateString?: string) => {
