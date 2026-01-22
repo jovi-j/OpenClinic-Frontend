@@ -103,7 +103,7 @@ const AppointmentScheduler: React.FC<AppointmentSchedulerProps> = ({
           text: `Error fetching slots: ${err.message}`,
         });
       } else {
-        console.log("Unknown error.", err);
+        console.error("Unknown error.", err);
       }
     } finally {
       setLoading(false);
