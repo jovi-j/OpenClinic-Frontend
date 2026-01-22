@@ -44,55 +44,48 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
   const [medics, setMedics] = useState<MedicResponseDTO[]>([]);
   const [patients, setPatients] = useState<PatientResponseDTO[]>([]);
 
-  useEffect(() => {
-    // Load directories based on role
-    const loadDirectories = async () => {
+  const fetchAppointments = useCallback(
+    async (page: number = 0) => {
+      setError(null);
       try {
-        // Always load directories to resolve names if needed
-        const [medicsData, patientsData] = await Promise.all([
-          ApiService.listMedics(),
-          ApiService.listPatients()
-        ]);
-        setMedics(medicsData);
-        setPatients(patientsData);
-      } catch (err) {
-        console.error("Failed to load directories", err);
+        const criteria: SearchCriteria = {};
+        console.debug(criteria);
+        if (selectedDate) criteria.date = selectedDate;
+        if (selectedStatus) criteria.status = selectedStatus;
+
+        // Use prop ID if available, otherwise use selected ID
+        if (medicId) criteria.medicId = medicId;
+        else if (selectedMedicId) criteria.medicId = selectedMedicId;
+
+        if (patientId) criteria.patientId = patientId;
+        else if (selectedPatientId) criteria.patientId = selectedPatientId;
+
+        const data: Page<AppointmentResponseDTO> =
+          await ApiService.searchAppointments(criteria, page, pageSize);
+        setAppointments(data.content);
+        setTotalPages(data.totalPages);
+        setTotalElements(data.totalElements);
+        setCurrentPage(data.number);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          console.error("Error", err);
+        }
+      } finally {
+        setLoading(false);
       }
-    };
-    loadDirectories();
-  }, []);
-
-  const fetchAppointments = async (page: number = 0) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const criteria: any = {};
-      if (selectedDate) criteria.date = selectedDate;
-      if (selectedStatus) criteria.status = selectedStatus;
-      
-      // Use prop ID if available, otherwise use selected ID
-      if (medicId) criteria.medicId = medicId;
-      else if (selectedMedicId) criteria.medicId = selectedMedicId;
-
-      if (patientId) criteria.patientId = patientId;
-      else if (selectedPatientId) criteria.patientId = selectedPatientId;
-
-      const data: Page<AppointmentResponseDTO> = await ApiService.searchAppointments(criteria, page, pageSize);
-      setAppointments(data.content);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
-      setCurrentPage(data.number);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Initial fetch
-  useEffect(() => {
-    fetchAppointments(0);
-  }, []);
+    },
+    [
+      medicId,
+      patientId,
+      selectedDate,
+      selectedMedicId,
+      selectedPatientId,
+      selectedStatus,
+      pageSize,
+    ],
+  );
 
   const handleCancel = async (id: string) => {
     if (!window.confirm("Are you sure you want to cancel this appointment?"))
@@ -143,6 +136,25 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
     const medic = medics.find((m) => m.id === apt.medicId);
     return medic?.person?.name || "-";
   };
+
+  useInterval(fetchAppointments, 5000);
+
+  useEffect(() => {
+    const loadDirectories = async () => {
+      try {
+        const [medicsData, patientsData] = await Promise.all([
+          ApiService.listMedics(),
+          ApiService.listPatients(),
+        ]);
+        setMedics(medicsData);
+        setPatients(patientsData);
+      } catch (err) {
+        console.error("Failed to load directories", err);
+      }
+    };
+    loadDirectories();
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   return (
     <div className="space-y-4">
