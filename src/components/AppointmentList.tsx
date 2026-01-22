@@ -108,18 +108,18 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
     }
   };
 
-  const formatTime = (time: string) => {
-    const parts = time.split(":");
+  const formatTime = (timeString: string | undefined) => {
+    if (!timeString) return;
+    const parts = timeString.split(":");
     if (parts.length >= 2) {
       return `${parts[0]}:${parts[1]}`;
     }
-    return time;
+    return timeString;
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return;
     const date = new Date(dateString);
-    // Adjust for timezone offset to display correct date
     const userTimezoneOffset = date.getTimezoneOffset() * 60000;
     const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
     return adjustedDate.toLocaleDateString();
@@ -276,9 +276,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
                 {appointments.map((apt) => (
                   <tr key={apt.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(apt.date)}{" "}
+                      {formatDate(apt.date?.toString())}{" "}
                       <span className="text-gray-500 ml-1 font-mono">
-                        {formatTime(apt.time)}
+                        {formatTime(apt.time?.toString())}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
