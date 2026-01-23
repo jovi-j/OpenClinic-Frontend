@@ -1,12 +1,12 @@
 export interface TicketRequestDTO {
   ticketQueueId?: string;
-  ticketPriority?: "NMT" | "ERT" | "PRT";
+  ticketPriority?: string;
 }
 
 export interface TicketResponseDTO {
   id?: string;
   ticketNum?: number;
-  ticketPriority?: "NMT" | "ERT" | "PRT";
+  ticketPriority?: string;
   status?:
     | "WAITING ATTENDANT"
     | "WAITING APPOINTMENT"

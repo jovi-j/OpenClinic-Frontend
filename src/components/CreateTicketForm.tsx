@@ -5,7 +5,7 @@ import { TicketRequestDTO, TicketQueueResponseDTO } from "../types/api";
 const CreateTicketForm: React.FC = () => {
   const [queues, setQueues] = useState<TicketQueueResponseDTO[]>([]);
   const [ticketQueueId, setTicketQueueId] = useState("");
-  const [priority, setPriority] = useState<"NMT" | "ERT" | "PRT">("NMT");
+  const [priority, setPriority] = useState<string>(TicketPriority.NMT);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -119,7 +119,7 @@ const CreateTicketForm: React.FC = () => {
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setPriority(option.value as any)}
+                onClick={() => setPriority(option.value)}
                 className={`py-2 px-3 text-sm font-medium rounded-md border ${
                   priority === option.value
                     ? "ring-2 ring-offset-1 ring-blue-500 border-transparent shadow-sm"
