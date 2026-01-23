@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ApiService } from "../services/apiService";
-import { TicketQueueRequestDTO, MedicResponseDTO } from "../types/api";
+import type { TicketQueueRequestDTO, MedicResponseDTO } from "../types/api";
 
 const CreateTicketQueueForm: React.FC = () => {
   const [medics, setMedics] = useState<MedicResponseDTO[]>([]);
@@ -46,26 +46,30 @@ const CreateTicketQueueForm: React.FC = () => {
       });
       setConsultationRoom("");
       setMedicId("");
-    } catch (err: any) {
-      let errorMsg = err.message;
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        let errorMsg = err.message;
 
-      // Improve error message for duplicate queues
-      if (errorMsg.includes("already exists")) {
-        if (isMedicQueue) {
-          errorMsg = "A queue for this medic already exists today.";
-        } else {
-          errorMsg = "A general queue already exists today.";
+        // Improve error message for duplicate queues
+        if (errorMsg.includes("already exists")) {
+          if (isMedicQueue) {
+            errorMsg = "A queue for this medic already exists today.";
+          } else {
+            errorMsg = "A general queue already exists today.";
+          }
+        } else if (errorMsg.includes("409")) {
+          // Fallback for status code check if message is generic
+          if (isMedicQueue) {
+            errorMsg = "A queue for this medic already exists today.";
+          } else {
+            errorMsg = "A general queue already exists today.";
+          }
         }
-      } else if (errorMsg.includes("409")) {
-        // Fallback for status code check if message is generic
-        if (isMedicQueue) {
-          errorMsg = "A queue for this medic already exists today.";
-        } else {
-          errorMsg = "A general queue already exists today.";
-        }
+
+        setMessage({ type: "error", text: errorMsg });
+      } else {
+        console.error("Unknown error.", err);
       }
-
-      setMessage({ type: "error", text: errorMsg });
     } finally {
       setLoading(false);
     }

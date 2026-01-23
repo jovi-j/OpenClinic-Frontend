@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ApiService } from "../services/apiService";
-import { MedicResponseDTO, MedicRequestDTO } from "../types/api";
+import type { MedicResponseDTO, MedicRequestDTO } from "../types/api";
 
 const MedicList: React.FC = () => {
   const [medics, setMedics] = useState<MedicResponseDTO[]>([]);
@@ -23,8 +23,12 @@ const MedicList: React.FC = () => {
       const data = await ApiService.listMedics();
       setMedics(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }
@@ -44,8 +48,12 @@ const MedicList: React.FC = () => {
     try {
       await ApiService.deleteMedic(id);
       fetchMedics();
-    } catch (err: any) {
-      alert(`Error deleting medic: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(`Error deleting medic: ${err.message}`);
+      } else {
+        console.error("Unknown error.", err);
+      }
     }
   };
 
@@ -85,8 +93,12 @@ const MedicList: React.FC = () => {
       await ApiService.updateMedic(editingMedic.id, payload);
       setEditingMedic(null);
       fetchMedics();
-    } catch (err: any) {
-      alert(`Error updating medic: ${err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(`Error updating medic: ${err.message}`);
+      } else {
+        console.error("Unknown error.", err);
+      }
     }
   };
 

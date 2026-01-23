@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ApiService } from "../services/apiService";
-import { MedicRequestDTO } from "../types/api";
+import type { MedicRequestDTO } from "../types/api";
 
 const RegisterMedicForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -43,8 +43,12 @@ const RegisterMedicForm: React.FC = () => {
       setDob("");
       setCrm("");
       setType("");
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }

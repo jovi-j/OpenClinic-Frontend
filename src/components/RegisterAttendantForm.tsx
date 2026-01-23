@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ApiService } from "../services/apiService";
-import { AttendantRequestDTO } from "../types/api";
+import type { AttendantRequestDTO } from "../types/api";
 
 const RegisterAttendantForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -43,8 +43,12 @@ const RegisterAttendantForm: React.FC = () => {
       setCpf("");
       setDob("");
       setTicketWindow("");
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ApiService } from "../services/apiService";
-import { ScheduleRequestDTO, MedicResponseDTO } from "../types/api";
+import type { ScheduleRequestDTO, MedicResponseDTO } from "../types/api";
 import MessageDisplay from "./UI/MessageDisplay";
-import { set } from "react-datepicker/dist/dist/date_utils.js";
 
 interface CreateScheduleFormProps {
   medicId?: string; // If provided, pre-select and hide selector
@@ -73,8 +72,12 @@ const CreateScheduleForm: React.FC<CreateScheduleFormProps> = ({
         type: "success",
         text: "Schedule created successfully! Appointments generated.",
       });
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }

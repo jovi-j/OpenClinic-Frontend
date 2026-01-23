@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ApiService } from "../services/apiService";
-import { PatientRequestDTO } from "../types/api";
+import type { PatientRequestDTO } from "../types/api";
 
 const RegisterPatientForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -37,8 +37,12 @@ const RegisterPatientForm: React.FC = () => {
       setName("");
       setCpf("");
       setDob("");
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }

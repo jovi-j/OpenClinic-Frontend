@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ApiService } from "../services/apiService";
-import { TicketRequestDTO, TicketQueueResponseDTO } from "../types/api";
+import type { TicketRequestDTO, TicketQueueResponseDTO } from "../types/api";
+import TicketPriority from "../types/ticketPriority";
 
 const CreateTicketForm: React.FC = () => {
   const [queues, setQueues] = useState<TicketQueueResponseDTO[]>([]);
@@ -50,8 +51,12 @@ const CreateTicketForm: React.FC = () => {
       await ApiService.createTicket(payload);
       setMessage({ type: "success", text: "Ticket created successfully!" });
       setPriority("NMT");
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err) {
+      if (err instanceof Error) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }

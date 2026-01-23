@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ApiService } from "../services/apiService";
-import {
+import type {
   TicketQueueResponseDTO,
   TicketResponseDTO,
   TicketRequestDTO,
@@ -79,9 +79,13 @@ const KioskMode: React.FC<{ onExit: () => void }> = ({ onExit }) => {
       setTimeout(() => {
         setCreatedTicket(null);
       }, 5000);
-    } catch (err: any) {
-      setError(`${err.message} (Backend: ${ApiService.getDebugUrl()})`);
-      setTimeout(() => setError(null), 5000);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`${err.message} (Backend: ${ApiService.getDebugUrl()})`);
+        setTimeout(() => setError(null), 5000);
+      } else {
+        console.error("Unknown error.", err);
+      }
     } finally {
       setLoading(false);
     }
