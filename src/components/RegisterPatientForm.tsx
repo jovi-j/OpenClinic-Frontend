@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { ApiService } from "../services/apiService";
 import type { PatientRequestDTO } from "../types/api";
+import type { MessageType } from "./UI/MessageDisplay";
+import MessageDisplay from "./UI/MessageDisplay";
 
 const RegisterPatientForm: React.FC = () => {
   const [name, setName] = useState("");
   const [cpf, setCpf] = useState("");
   const [dob, setDob] = useState("");
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<MessageType | null>(null);
   const [loading, setLoading] = useState(false);
 
   const formatDate = (dateString: string): string => {
@@ -47,6 +46,10 @@ const RegisterPatientForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  function handleMessageChange(): void {
+    setMessage(null);
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -97,11 +100,7 @@ const RegisterPatientForm: React.FC = () => {
         </button>
       </form>
       {message && (
-        <div
-          className={`mt-4 p-3 rounded text-sm ${message.type === "error" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}
-        >
-          {message.text}
-        </div>
+        <MessageDisplay message={message} onClose={handleMessageChange} />
       )}
     </div>
   );

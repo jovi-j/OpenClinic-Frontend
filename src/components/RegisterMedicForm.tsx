@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { ApiService } from "../services/apiService";
 import type { MedicRequestDTO } from "../types/api";
+import type { MessageType } from "./UI/MessageDisplay";
+import MessageDisplay from "./UI/MessageDisplay";
 
 const RegisterMedicForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -8,10 +10,7 @@ const RegisterMedicForm: React.FC = () => {
   const [dob, setDob] = useState("");
   const [crm, setCrm] = useState("");
   const [type, setType] = useState("");
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<MessageType | null>(null);
   const [loading, setLoading] = useState(false);
 
   const formatDate = (dateString: string): string => {
@@ -53,6 +52,10 @@ const RegisterMedicForm: React.FC = () => {
       setLoading(false);
     }
   };
+
+  function handleMessageChange(): void {
+    setMessage(null);
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -125,11 +128,7 @@ const RegisterMedicForm: React.FC = () => {
         </button>
       </form>
       {message && (
-        <div
-          className={`mt-4 p-3 rounded text-sm ${message.type === "error" ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}
-        >
-          {message.text}
-        </div>
+        <MessageDisplay message={message} onClose={handleMessageChange} />
       )}
     </div>
   );
