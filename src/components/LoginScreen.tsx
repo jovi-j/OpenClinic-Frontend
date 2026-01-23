@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { ApiService } from "../services/apiService";
-import {
-  PatientResponseDTO,
-  MedicResponseDTO,
-  AttendantResponseDTO,
-} from "../types/api";
+import type { User } from "../types/user";
 
 type UserType = "PATIENT" | "MEDIC" | "ATTENDANT";
 
 interface LoginScreenProps {
   type: UserType;
-  onLogin: (user: any) => void;
+  onLogin: (user: User) => void;
   onBack: () => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ type, onLogin, onBack }) => {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        let data = [];
+        let data: User[] = [];
         if (type === "PATIENT") data = await ApiService.listPatients();
         if (type === "MEDIC") data = await ApiService.listMedics();
         if (type === "ATTENDANT") data = await ApiService.listAttendants();
